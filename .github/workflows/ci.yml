@@ -31,24 +31,20 @@ jobs:
     
     - name: Run Django migrations
       run: |
-        python manage.py makemigrations --check --dry-run || python manage.py makemigrations
-        python manage.py migrate
-      env:
-        DJANGO_SETTINGS_MODULE: task_agenda.test_settings
+        python manage.py makemigrations --check --dry-run --settings=task_agenda.test_settings || python manage.py makemigrations --settings=task_agenda.test_settings
+        python manage.py migrate --settings=task_agenda.test_settings
     
     - name: Run Django tests
       run: |
-        python manage.py test --verbosity=2
-      env:
-        DJANGO_SETTINGS_MODULE: task_agenda.test_settings
+        python manage.py test --verbosity=2 --settings=task_agenda.test_settings
     
     - name: Run pytest
       run: |
-        pytest app/tests.py -v --tb=short
+        python -m pytest app/tests.py -v --tb=short
       env:
         DJANGO_SETTINGS_MODULE: task_agenda.test_settings
     
     - name: Check code quality
       run: |
-        flake8 app/ --max-line-length=127 --exclude=migrations || true
-        black --check app/ --exclude=migrations || true
+        flake8 app/ --max-line-length=127 --exclude=migrations --exit-zero
+        black --check app/ --exclude=migrations --diff || true
