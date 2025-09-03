@@ -1,0 +1,217 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Tarea - Agenda de Tareas Personales{% endblock %}
+
+{% block page_header %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h1>
+                <p class="text-muted mb-0">¿Estás seguro de que quieres eliminar esta tarea?</p>
+            </div>
+            <a href="{% url 'app:task_detail' task.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Cancelar
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Información del Equipo -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-people me-2"></i>
+                <div>
+                    <strong>Desarrollado por:</strong>
+                    Carlos Landa (Scrum Master) • Jhordan Peralta (Product Owner) • David Leonardo (Backend) • 
+                    Mateo (Backend) • Fabbian Espinoza (Frontend)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Alerta de confirmación -->
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ¡Atención!
+            </h4>
+            <p>Estás a punto de eliminar permanentemente la siguiente tarea. Esta acción no se puede deshacer.</p>
+            <hr>
+            <p class="mb-0">Por favor, revisa los detalles de la tarea antes de confirmar la eliminación.</p>
+        </div>
+
+        <!-- Información de la tarea a eliminar -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-trash me-2"></i>
+                    Tarea a Eliminar
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4 class="mb-3">{{ task.titulo }}</h4>
+                        {% if task.descripcion %}
+                            <div class="mb-3">
+                                <h6>Descripción:</h6>
+                                <p class="text-muted">{{ task.descripcion|linebreaks }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-end">
+                            <span class="badge bg-{% if task.prioridad == 'urgente' %}danger{% elif task.prioridad == 'alta' %}warning{% elif task.prioridad == 'media' %}info{% else %}secondary{% endif %} fs-6 mb-2">
+                                {{ task.get_prioridad_display }}
+                            </span>
+                            <br>
+                            <span class="badge bg-{% if task.estado == 'completada' %}success{% elif task.estado == 'en_progreso' %}primary{% elif task.estado == 'cancelada' %}secondary{% else %}warning{% endif %} fs-6">
+                                {{ task.get_estado_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información de Fechas:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Creada:</strong> {{ task.fecha_creacion|date:"d/m/Y H:i" }}</li>
+                            <li><strong>Fecha Límite:</strong> {{ task.fecha_limite|date:"d/m/Y H:i" }}</li>
+                            <li><strong>Última Actualización:</strong> {{ task.fecha_actualizacion|date:"d/m/Y H:i" }}</li>
+                            {% if task.completada_en %}
+                                <li><strong>Completada:</strong> {{ task.completada_en|date:"d/m/Y H:i" }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Estado Actual:</h6>
+                        {% if task.esta_vencida %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Vencida</strong>
+                            </div>
+                        {% elif task.dias_restantes == 0 %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-clock me-2"></i>
+                                <strong>Vence Hoy</strong>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-calendar-range me-2"></i>
+                                <strong>{{ task.dias_restantes }} días restantes</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de confirmación -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    Confirmación de Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Información Importante
+                        </h6>
+                        <p class="mb-0">
+                            Al eliminar esta tarea, se perderá permanentemente toda la información asociada, 
+                            incluyendo su historial, fechas y descripción. Esta acción no se puede deshacer.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_text" class="form-label">
+                            Para confirmar, escribe el título de la tarea:
+                        </label>
+                        <input type="text" class="form-control" id="confirm_text" 
+                               placeholder="Escribe: {{ task.titulo }}" required>
+                        <div class="form-text">
+                            Debes escribir exactamente: <strong>{{ task.titulo }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'app:task_detail' task.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger" id="delete-btn" disabled>
+                            <i class="bi bi-trash me-2"></i>
+                            Eliminar Tarea Permanentemente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmInput = document.getElementById('confirm_text');
+    const deleteBtn = document.getElementById('delete-btn');
+    const taskTitle = '{{ task.titulo }}';
+    
+    // Validación en tiempo real
+    confirmInput.addEventListener('input', function() {
+        const inputValue = this.value.trim();
+        
+        if (inputValue === taskTitle) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+            deleteBtn.disabled = false;
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+            deleteBtn.disabled = true;
+        }
+    });
+    
+    // Confirmación adicional al hacer clic en eliminar
+    deleteBtn.addEventListener('click', function(e) {
+        if (!confirm('¿Estás ABSOLUTAMENTE seguro de que quieres eliminar esta tarea? Esta acción es irreversible.')) {
+            e.preventDefault();
+        }
+    });
+    
+    // Prevenir envío accidental del formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (confirmInput.value.trim() !== taskTitle) {
+            e.preventDefault();
+            alert('Debes escribir exactamente el título de la tarea para confirmar la eliminación.');
+            confirmInput.focus();
+        }
+    });
+});
+</script>
+{% endblock %}
+
+

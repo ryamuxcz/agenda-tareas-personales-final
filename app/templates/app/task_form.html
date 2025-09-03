@@ -1,0 +1,259 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Agenda de Tareas Personales{% endblock %}
+
+{% block page_header %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-{% if task %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+                    {{ title }}
+                </h1>
+                <p class="text-muted mb-0">
+                    {% if task %}
+                        Edita los detalles de tu tarea
+                    {% else %}
+                        Crea una nueva tarea personal
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'app:task_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Volver a la Lista
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Información del Equipo -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-people me-2"></i>
+                <div>
+                    <strong>Desarrollado por:</strong>
+                    Carlos Landa (Scrum Master) • Jhordan Peralta (Product Owner) • David Leonardo (Backend) • 
+                    Mateo (Backend) • Fabbian Espinoza (Frontend)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clipboard-data me-2"></i>
+                    Información de la Tarea
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Título -->
+                    <div class="mb-3">
+                        <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                            <i class="bi bi-type me-1"></i>
+                            {{ form.titulo.label }}
+                        </label>
+                        {{ form.titulo }}
+                        {% if form.titulo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.titulo.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">{{ form.titulo.help_text }}</div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                            <i class="bi bi-card-text me-1"></i>
+                            {{ form.descripcion.label }}
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descripcion.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">{{ form.descripcion.help_text }}</div>
+                    </div>
+
+                    <!-- Prioridad y Estado -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.prioridad.id_for_label }}" class="form-label">
+                                    <i class="bi bi-flag me-1"></i>
+                                    {{ form.prioridad.label }}
+                                </label>
+                                {{ form.prioridad }}
+                                {% if form.prioridad.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.prioridad.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.prioridad.help_text }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                    <i class="bi bi-check2-square me-1"></i>
+                                    {{ form.estado.label }}
+                                </label>
+                                {{ form.estado }}
+                                {% if form.estado.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.estado.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.estado.help_text }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fecha Límite -->
+                    <div class="mb-4">
+                        <label for="{{ form.fecha_limite.id_for_label }}" class="form-label">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            {{ form.fecha_limite.label }}
+                        </label>
+                        {{ form.fecha_limite }}
+                        {% if form.fecha_limite.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.fecha_limite.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">{{ form.fecha_limite.help_text }}</div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'app:task_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-{% if task %}check-circle{% else %}plus-circle{% endif %} me-2"></i>
+                            {{ submit_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Información adicional si es edición -->
+        {% if task %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información Adicional
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Creada:</strong> {{ task.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                        <p class="mb-1"><strong>Última actualización:</strong> {{ task.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if task.completada_en %}
+                            <p class="mb-1"><strong>Completada:</strong> {{ task.completada_en|date:"d/m/Y H:i" }}</p>
+                        {% endif %}
+                        {% if task.esta_vencida %}
+                            <p class="mb-1 text-danger"><strong>Estado:</strong> <i class="bi bi-exclamation-triangle me-1"></i>Vencida</p>
+                        {% else %}
+                            <p class="mb-1"><strong>Días restantes:</strong> {{ task.dias_restantes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación en tiempo real del formulario
+    const form = document.querySelector('form');
+    const tituloInput = document.querySelector('#{{ form.titulo.id_for_label }}');
+    const fechaInput = document.querySelector('#{{ form.fecha_limite.id_for_label }}');
+    
+    // Validación del título
+    tituloInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value.length < 3) {
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Validación de la fecha límite
+    fechaInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const now = new Date();
+        
+        if (selectedDate <= now && !{{ task.pk|yesno:"true,false" }}) {
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Prevenir envío si hay errores
+    form.addEventListener('submit', function(e) {
+        const titulo = tituloInput.value.trim();
+        const fecha = fechaInput.value;
+        
+        if (titulo.length < 3) {
+            e.preventDefault();
+            alert('El título debe tener al menos 3 caracteres.');
+            tituloInput.focus();
+            return;
+        }
+        
+        if (fecha) {
+            const selectedDate = new Date(fecha);
+            const now = new Date();
+            
+            if (selectedDate <= now && !{{ task.pk|yesno:"true,false" }}) {
+                e.preventDefault();
+                alert('La fecha límite debe ser una fecha futura para nuevas tareas.');
+                fechaInput.focus();
+                return;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+
